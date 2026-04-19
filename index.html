@@ -3,724 +3,433 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>АптекаПошук — пошук ліків по всіх аптеках</title>
+<title>АптекаПошук UA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --green:       #1a7a4a;
-    --green-mid:   #2ea86a;
-    --green-light: #e8f5ee;
-    --green-dark:  #0f2218;
-    --amber:       #e8920a;
-    --amber-bg:    #fff4e0;
-    --blue:        #3b5bd6;
-    --blue-bg:     #e8eeff;
-    --red:         #d63b3b;
-    --bg:          #f4f7f4;
-    --card:        #ffffff;
-    --text:        #111111;
-    --muted:       #6b7280;
-    --border:      #d1ddd1;
+    --green: #1a7a4a; --green-mid: #2ea86a; --green-light: #e8f5ee; --green-dark: #0f2218;
+    --amber: #e8920a; --amber-bg: #fff4e0;
+    --blue: #3b5bd6; --blue-bg: #e8eeff;
+    --purple: #6d28d9; --purple-bg: #f3f0ff;
+    --red: #d63b3b; --bg: #f4f7f4; --card: #fff; --text: #111; --muted: #6b7280; --border: #d1ddd1;
   }
+  body { font-family: 'Golos Text', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-  body {
-    font-family: 'Golos Text', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-  }
+  .header { background: var(--green-dark); padding: 32px 40px 28px; position: relative; overflow: hidden; }
+  .header::before { content:''; position:absolute; top:-50px; right:-50px; width:220px; height:220px; border-radius:50%; background:rgba(46,168,106,.12); }
+  .header::after  { content:''; position:absolute; bottom:-30px; left:80px; width:120px; height:120px; border-radius:50%; background:rgba(46,168,106,.07); }
+  .logo    { font-family:'Unbounded',sans-serif; font-size:11px; font-weight:700; color:var(--green-mid); letter-spacing:.1em; text-transform:uppercase; margin-bottom:10px; }
+  .tagline { font-size:26px; font-weight:600; color:#fff; line-height:1.3; }
+  .tagline em { color:var(--green-mid); font-style:normal; }
+  .header-sub { margin-top:8px; font-size:14px; color:rgba(255,255,255,.5); }
 
-  /* ── HEADER ───────────────────────────────────────────────── */
-  .header {
-    background: var(--green-dark);
-    padding: 32px 40px 28px;
-    position: relative;
-    overflow: hidden;
-  }
-  .header::before {
-    content: '';
-    position: absolute; top: -50px; right: -50px;
-    width: 220px; height: 220px; border-radius: 50%;
-    background: rgba(46,168,106,.12);
-  }
-  .header::after {
-    content: '';
-    position: absolute; bottom: -30px; left: 80px;
-    width: 120px; height: 120px; border-radius: 50%;
-    background: rgba(46,168,106,.07);
-  }
-  .logo {
-    font-family: 'Unbounded', sans-serif;
-    font-size: 11px; font-weight: 700;
-    color: var(--green-mid);
-    letter-spacing: .1em; text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-  .tagline {
-    font-size: 26px; font-weight: 600; color: #fff; line-height: 1.3;
-  }
-  .tagline em { color: var(--green-mid); font-style: normal; }
-  .header-sub {
-    margin-top: 8px; font-size: 14px; color: rgba(255,255,255,.55);
-  }
+  .search-area { background:var(--card); padding:24px 40px 20px; border-bottom:1px solid var(--border); }
+  .search-row { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+  .input-wrap { position:relative; flex:1; min-width:220px; }
+  .input-wrap .ico { position:absolute; left:13px; top:50%; transform:translateY(-50%); width:17px; height:17px; color:var(--muted); pointer-events:none; }
+  input[type="text"] { width:100%; padding:12px 12px 12px 40px; border:1.5px solid var(--border); border-radius:8px; font-family:'Golos Text',sans-serif; font-size:15px; color:var(--text); background:#fafcfa; outline:none; transition:border-color .15s; }
+  input[type="text"]:focus { border-color:var(--green-mid); background:#fff; }
+  input[type="text"].error { border-color:var(--red); animation:shake .3s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
 
-  /* ── SEARCH BAR ───────────────────────────────────────────── */
-  .search-area {
-    background: var(--card);
-    padding: 24px 40px 20px;
-    border-bottom: 1px solid var(--border);
-    position: sticky; top: 0; z-index: 10;
-    box-shadow: 0 2px 8px rgba(0,0,0,.06);
-  }
-  .search-row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .city-wrap { position:relative; min-width:160px; }
+  .city-wrap .ico { position:absolute; left:11px; top:50%; transform:translateY(-50%); width:16px; height:16px; color:var(--muted); pointer-events:none; }
+  select { width:100%; padding:12px 14px 12px 34px; border:1.5px solid var(--border); border-radius:8px; font-family:'Golos Text',sans-serif; font-size:14px; color:var(--text); background:#fafcfa; outline:none; cursor:pointer; appearance:none; transition:border-color .15s; }
+  select:focus { border-color:var(--green-mid); }
 
-  .input-wrap { position: relative; flex: 1; min-width: 220px; }
-  .input-wrap .ico {
-    position: absolute; left: 13px; top: 50%;
-    transform: translateY(-50%);
-    width: 17px; height: 17px; color: var(--muted); pointer-events: none;
-  }
-  input[type="text"] {
-    width: 100%; padding: 12px 12px 12px 40px;
-    border: 1.5px solid var(--border); border-radius: 8px;
-    font-family: 'Golos Text', sans-serif; font-size: 15px;
-    color: var(--text); background: #fafcfa; outline: none;
-    transition: border-color .15s;
-  }
-  input[type="text"]:focus { border-color: var(--green-mid); background: #fff; }
-  input[type="text"].error { border-color: var(--red); }
+  .btn-geo { padding:12px 16px; background:var(--green-light); color:var(--green); border:1.5px solid #b8dcc8; border-radius:8px; font-family:'Golos Text',sans-serif; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:7px; transition:all .15s; }
+  .btn-geo:hover, .btn-geo.active { background:var(--green); color:#fff; border-color:var(--green); }
+  .btn-geo svg { width:16px; height:16px; }
+  .btn-search { padding:12px 28px; background:var(--green); color:#fff; border:none; border-radius:8px; font-family:'Unbounded',sans-serif; font-size:11px; font-weight:700; cursor:pointer; letter-spacing:.05em; white-space:nowrap; transition:background .15s, transform .1s; }
+  .btn-search:hover  { background:var(--green-mid); }
+  .btn-search:active { transform:scale(.97); }
 
-  .city-wrap { position: relative; min-width: 160px; }
-  .city-wrap .ico {
-    position: absolute; left: 11px; top: 50%;
-    transform: translateY(-50%);
-    width: 16px; height: 16px; color: var(--muted); pointer-events: none;
-  }
-  select {
-    width: 100%; padding: 12px 14px 12px 34px;
-    border: 1.5px solid var(--border); border-radius: 8px;
-    font-family: 'Golos Text', sans-serif; font-size: 14px;
-    color: var(--text); background: #fafcfa; outline: none;
-    cursor: pointer; appearance: none;
-    transition: border-color .15s;
-  }
-  select:focus { border-color: var(--green-mid); }
+  .filter-row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .filter-label { font-size:12px; color:var(--muted); }
+  .pill { padding:5px 14px; border-radius:20px; border:1px solid var(--border); font-size:12px; font-weight:500; cursor:pointer; background:var(--card); color:var(--muted); transition:all .12s; user-select:none; }
+  .pill.active { background:var(--green); color:#fff; border-color:var(--green); }
+  .pill:hover:not(.active) { border-color:var(--green-mid); color:var(--green); }
 
-  .btn-geo {
-    padding: 12px 16px;
-    background: var(--green-light); color: var(--green);
-    border: 1.5px solid #b8dcc8; border-radius: 8px;
-    font-family: 'Golos Text', sans-serif; font-size: 13px; font-weight: 600;
-    cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 7px;
-    transition: all .15s;
-  }
-  .btn-geo:hover { background: var(--green); color: #fff; border-color: var(--green); }
-  .btn-geo svg { width: 16px; height: 16px; }
-  .btn-geo.active { background: var(--green); color: #fff; border-color: var(--green); }
+  .geo-bar { display:none; align-items:center; gap:8px; padding:8px 14px; border-radius:8px; font-size:13px; margin-top:12px; }
+  .geo-bar.ok   { background:var(--green-light); color:var(--green);  border:1px solid #b8dcc8; display:flex; }
+  .geo-bar.err  { background:#fff0f0;            color:var(--red);    border:1px solid #f5c0c0; display:flex; }
+  .geo-bar.wait { background:var(--amber-bg);    color:var(--amber);  border:1px solid #fcd34d; display:flex; }
 
-  .btn-search {
-    padding: 12px 28px;
-    background: var(--green); color: #fff;
-    border: none; border-radius: 8px;
-    font-family: 'Unbounded', sans-serif; font-size: 11px; font-weight: 700;
-    cursor: pointer; letter-spacing: .05em; white-space: nowrap;
-    transition: background .15s, transform .1s;
-  }
-  .btn-search:hover { background: var(--green-mid); }
-  .btn-search:active { transform: scale(.97); }
+  .main { padding:28px 40px 48px; max-width:960px; margin:0 auto; }
+  .section-label { font-family:'Unbounded',sans-serif; font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+  .badge { display:inline-flex; align-items:center; justify-content:center; background:var(--green); color:#fff; border-radius:10px; font-size:11px; font-weight:700; min-width:20px; height:20px; padding:0 6px; }
 
-  /* ── FILTER PILLS ─────────────────────────────────────────── */
-  .filter-row {
-    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
-  }
-  .filter-label { font-size: 12px; color: var(--muted); }
-  .pill {
-    padding: 5px 14px; border-radius: 20px;
-    border: 1px solid var(--border); font-size: 12px; font-weight: 500;
-    cursor: pointer; background: var(--card); color: var(--muted);
-    transition: all .12s; user-select: none;
-  }
-  .pill.active { background: var(--green); color: #fff; border-color: var(--green); }
-  .pill:hover:not(.active) { border-color: var(--green-mid); color: var(--green); }
+  .pharmacies-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(175px,1fr)); gap:10px; margin-bottom:24px; }
+  .ph-card { background:var(--card); border:1.5px solid var(--border); border-radius:10px; padding:14px 14px 12px; cursor:pointer; transition:border-color .15s, box-shadow .15s; position:relative; display:flex; flex-direction:column; gap:5px; user-select:none; }
+  .ph-card:hover { border-color:var(--green-mid); box-shadow:0 2px 12px rgba(26,122,74,.1); }
+  .ph-card.sel   { border-color:var(--green); background:var(--green-light); }
+  .ph-card .chk  { position:absolute; top:10px; right:10px; width:18px; height:18px; border-radius:50%; border:1.5px solid var(--border); background:#fff; display:flex; align-items:center; justify-content:center; transition:all .12s; }
+  .ph-card.sel .chk { background:var(--green); border-color:var(--green); }
+  .ph-card.sel .chk::after { content:''; width:9px; height:5px; border-left:2px solid #fff; border-bottom:2px solid #fff; transform:rotate(-45deg) translateY(-1px); display:block; }
+  .ph-name   { font-weight:600; font-size:14px; padding-right:22px; }
+  .ph-domain { font-size:11px; color:var(--muted); }
+  .ph-tag    { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:500; width:fit-content; margin-top:3px; }
+  .tag-agg    { background:var(--blue-bg);    color:var(--blue); }
+  .tag-direct { background:var(--green-light); color:var(--green); }
+  .tag-slug   { background:var(--purple-bg);  color:var(--purple); }
 
-  /* ── GEO STATUS ───────────────────────────────────────────── */
-  .geo-bar {
-    display: none; align-items: center; gap: 8px;
-    padding: 8px 14px; border-radius: 8px;
-    font-size: 13px; margin-top: 12px;
-  }
-  .geo-bar.ok   { background: var(--green-light); color: var(--green);  border: 1px solid #b8dcc8; }
-  .geo-bar.err  { background: #fff0f0;            color: var(--red);    border: 1px solid #f5c0c0; }
-  .geo-bar.wait { background: var(--amber-bg);    color: var(--amber);  border: 1px solid #fcd34d; }
-  .geo-bar svg  { width: 15px; height: 15px; flex-shrink: 0; }
+  .actions { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:26px; }
+  .btn-all { padding:12px 24px; background:var(--green); color:#fff; border:none; border-radius:8px; font-family:'Unbounded',sans-serif; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; letter-spacing:.04em; transition:background .15s; }
+  .btn-all:hover { background:var(--green-mid); }
+  .btn-all svg { width:15px; height:15px; }
+  .btn-sec { padding:12px 20px; background:transparent; color:var(--green); border:1.5px solid var(--green); border-radius:8px; font-family:'Golos Text',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; }
+  .btn-sec:hover { background:var(--green-light); }
 
-  /* ── MAIN ─────────────────────────────────────────────────── */
-  .main { padding: 28px 40px 48px; max-width: 960px; margin: 0 auto; }
+  #results-section { display:none; }
+  .results-head { display:grid; grid-template-columns:1fr 90px 90px; gap:8px; padding:9px 16px; background:#f0f4f0; border:1px solid var(--border); border-radius:10px 10px 0 0; font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+  .result-row  { display:grid; grid-template-columns:1fr 90px 90px; gap:8px; padding:13px 16px; align-items:center; background:var(--card); border:1px solid var(--border); border-top:none; }
+  .result-row:last-child { border-radius:0 0 10px 10px; }
+  .result-row:hover { background:#fafcfa; }
+  .rph-name { font-weight:500; font-size:14px; }
+  .rph-note { font-size:11px; color:var(--muted); margin-top:2px; }
+  .btn-open { padding:7px 13px; background:var(--green-light); color:var(--green); border:1px solid #b8dcc8; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; transition:all .12s; white-space:nowrap; }
+  .btn-open:hover { background:var(--green); color:#fff; border-color:var(--green); }
 
-  .section-label {
-    font-family: 'Unbounded', sans-serif;
-    font-size: 10px; font-weight: 600;
-    letter-spacing: .1em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 14px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .badge {
-    display: inline-flex; align-items: center; justify-content: center;
-    background: var(--green); color: #fff;
-    border-radius: 10px; font-size: 11px; font-weight: 700;
-    min-width: 20px; height: 20px; padding: 0 6px;
-  }
+  .notice { background:#fffbeb; border:1px solid #fcd34d; border-radius:8px; padding:12px 16px; font-size:13px; color:#92400e; display:flex; gap:10px; align-items:flex-start; margin-top:20px; line-height:1.5; }
+  .notice svg { width:16px; height:16px; flex-shrink:0; margin-top:2px; }
+  #empty-hint { text-align:center; padding:40px 16px; color:var(--muted); }
+  #empty-hint .emoji { font-size:36px; margin-bottom:10px; }
 
-  /* ── PHARMACY CARDS ───────────────────────────────────────── */
-  .pharmacies-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
-    gap: 10px; margin-bottom: 24px;
-  }
-  .ph-card {
-    background: var(--card); border: 1.5px solid var(--border);
-    border-radius: 10px; padding: 14px 14px 12px;
-    cursor: pointer; transition: border-color .15s, box-shadow .15s;
-    position: relative; display: flex; flex-direction: column; gap: 5px;
-  }
-  .ph-card:hover { border-color: var(--green-mid); box-shadow: 0 2px 12px rgba(26,122,74,.1); }
-  .ph-card.sel { border-color: var(--green); background: var(--green-light); }
-  .ph-card .chk {
-    position: absolute; top: 10px; right: 10px;
-    width: 18px; height: 18px; border-radius: 50%;
-    border: 1.5px solid var(--border); background: #fff;
-    display: flex; align-items: center; justify-content: center;
-    transition: all .12s;
-  }
-  .ph-card.sel .chk { background: var(--green); border-color: var(--green); }
-  .ph-card.sel .chk::after {
-    content: '';
-    width: 9px; height: 5px;
-    border-left: 2px solid #fff; border-bottom: 2px solid #fff;
-    transform: rotate(-45deg) translateY(-1px); display: block;
-  }
-  .ph-name { font-weight: 600; font-size: 14px; padding-right: 22px; }
-  .ph-domain { font-size: 11px; color: var(--muted); }
-  .ph-tag {
-    display: inline-block; padding: 2px 8px; border-radius: 4px;
-    font-size: 10px; font-weight: 500; width: fit-content; margin-top: 3px;
-  }
-  .tag-agg      { background: var(--blue-bg);   color: var(--blue); }
-  .tag-direct   { background: var(--green-light); color: var(--green); }
-  .tag-partial  { background: var(--amber-bg);  color: var(--amber); }
-
-  /* ── ACTION BUTTONS ───────────────────────────────────────── */
-  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 26px; }
-  .btn-all {
-    padding: 12px 24px; background: var(--green); color: #fff;
-    border: none; border-radius: 8px;
-    font-family: 'Unbounded', sans-serif; font-size: 11px; font-weight: 700;
-    cursor: pointer; display: flex; align-items: center; gap: 8px;
-    letter-spacing: .04em; transition: background .15s;
-  }
-  .btn-all:hover { background: var(--green-mid); }
-  .btn-all svg { width: 15px; height: 15px; }
-  .btn-sec {
-    padding: 12px 20px; background: transparent; color: var(--green);
-    border: 1.5px solid var(--green); border-radius: 8px;
-    font-family: 'Golos Text', sans-serif; font-size: 13px; font-weight: 600;
-    cursor: pointer; transition: all .15s;
-  }
-  .btn-sec:hover { background: var(--green-light); }
-
-  /* ── RESULTS TABLE ────────────────────────────────────────── */
-  #results-section { display: none; }
-  .results-head {
-    display: grid; grid-template-columns: 1fr 90px 70px;
-    gap: 8px; padding: 9px 16px;
-    background: #f0f4f0; border: 1px solid var(--border);
-    border-radius: 10px 10px 0 0;
-    font-size: 11px; font-weight: 600; color: var(--muted);
-    text-transform: uppercase; letter-spacing: .06em;
-  }
-  .result-row {
-    display: grid; grid-template-columns: 1fr 90px 70px;
-    gap: 8px; padding: 13px 16px; align-items: center;
-    background: var(--card); border: 1px solid var(--border); border-top: none;
-    transition: background .1s;
-  }
-  .result-row:last-child { border-radius: 0 0 10px 10px; }
-  .result-row:hover { background: #fafcfa; }
-  .rph-name { font-weight: 500; font-size: 14px; }
-  .rph-note { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .btn-open {
-    padding: 7px 13px; background: var(--green-light); color: var(--green);
-    border: 1px solid #b8dcc8; border-radius: 6px;
-    font-size: 12px; font-weight: 600; cursor: pointer;
-    transition: all .12s; white-space: nowrap;
-  }
-  .btn-open:hover { background: var(--green); color: #fff; border-color: var(--green); }
-
-  /* ── NOTICE ───────────────────────────────────────────────── */
-  .notice {
-    background: #fffbeb; border: 1px solid #fcd34d;
-    border-radius: 8px; padding: 12px 16px;
-    font-size: 13px; color: #92400e;
-    display: flex; gap: 10px; align-items: flex-start; margin-top: 20px;
-  }
-  .notice svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; }
-
-  /* ── EMPTY STATE ──────────────────────────────────────────── */
-  #empty-hint {
-    text-align: center; padding: 40px 16px; color: var(--muted);
-  }
-  #empty-hint .emoji { font-size: 36px; margin-bottom: 10px; }
-  #empty-hint p { font-size: 14px; }
-
-  /* ── RESPONSIVE ───────────────────────────────────────────── */
-  @media (max-width: 600px) {
-    .header { padding: 24px 20px 20px; }
-    .search-area { padding: 16px 20px 14px; }
-    .main { padding: 20px 20px 40px; }
-    .search-row { gap: 8px; }
-    .city-wrap { min-width: 130px; }
-    .tagline { font-size: 20px; }
-    .results-head,
-    .result-row { grid-template-columns: 1fr 70px; }
-    .results-head span:nth-child(2),
-    .result-row > .ph-tag { display: none; }
+  @media(max-width:600px) {
+    .header, .search-area, .main { padding-left:20px; padding-right:20px; }
+    .tagline { font-size:20px; }
+    .results-head, .result-row { grid-template-columns:1fr 80px; }
+    .results-head span:nth-child(2), .result-row .ph-tag { display:none; }
   }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <header class="header">
   <div class="logo">💊 АптекаПошук UA</div>
   <h1 class="tagline">Знайди ліки <em>дешевше</em> — в аптеках поруч</h1>
-  <p class="header-sub">Порівнюємо ціни по всіх мережах одразу, враховуємо геолокацію</p>
+  <p class="header-sub">Порівнює ціни по всіх мережах одразу, враховує геолокацію</p>
 </header>
 
-<!-- SEARCH -->
 <div class="search-area">
   <div class="search-row">
-
     <div class="input-wrap">
-      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-      </svg>
-      <input type="text" id="drug-input"
-             placeholder="Назва препарату, напр. Нурофен, Аугментин..."
-             onkeydown="if(event.key==='Enter') search()">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="drug-input" placeholder="Назва препарату, напр. Но-шпа, Нурофен...">
     </div>
-
     <div class="city-wrap">
-      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-        <circle cx="12" cy="10" r="3"/>
-      </svg>
-      <select id="city-select" onchange="onCityChange()">
-        <option value="kyiv"        data-lat="50.4501" data-lng="30.5234">Київ</option>
-        <option value="kharkiv"     data-lat="49.9935" data-lng="36.2304">Харків</option>
-        <option value="dnipro"      data-lat="48.4647" data-lng="35.0462">Дніпро</option>
-        <option value="odesa"       data-lat="46.4825" data-lng="30.7233">Одеса</option>
-        <option value="lviv"        data-lat="49.8397" data-lng="24.0297">Львів</option>
-        <option value="zaporizhzhia" data-lat="47.8388" data-lng="35.1396">Запоріжжя</option>
-        <option value="chernihiv"   data-lat="51.4982" data-lng="31.2893">Чернігів</option>
-        <option value="vinnytsia"   data-lat="49.2331" data-lng="28.4682">Вінниця</option>
-        <option value="poltava"     data-lat="49.5883" data-lng="34.5514">Полтава</option>
-        <option value="mykolaiv"    data-lat="46.9750" data-lng="31.9946">Миколаїв</option>
-        <option value="custom"      data-lat="" data-lng="">📍 Моя геолокація</option>
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <select id="city-select">
+        <option value="kyiv">Київ</option>
+        <option value="kharkiv">Харків</option>
+        <option value="dnipro">Дніпро</option>
+        <option value="odesa">Одеса</option>
+        <option value="lviv">Львів</option>
+        <option value="zaporizhzhia">Запоріжжя</option>
+        <option value="chernihiv">Чернігів</option>
+        <option value="vinnytsia">Вінниця</option>
+        <option value="poltava">Полтава</option>
+        <option value="mykolaiv">Миколаїв</option>
+        <option value="custom">📍 Моя геолокація</option>
       </select>
     </div>
-
-    <button class="btn-geo" id="btn-geo" onclick="requestGeo()" title="Визначити місцезнаходження">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
-        <circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/>
-      </svg>
+    <button class="btn-geo" id="btn-geo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/></svg>
       Геолокація
     </button>
-
-    <button class="btn-search" onclick="search()">ЗНАЙТИ →</button>
+    <button class="btn-search" id="btn-search">ЗНАЙТИ →</button>
   </div>
-
-  <!-- GEO STATUS BAR -->
   <div class="geo-bar" id="geo-bar">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="geo-bar-ico">
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
-    </svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg>
     <span id="geo-bar-txt"></span>
   </div>
-
-  <!-- SORT PILLS -->
   <div class="filter-row" style="margin-top:14px;">
     <span class="filter-label">Сортування:</span>
-    <span class="pill active" data-sort="price"    onclick="setSort(this)">🏷 За ціною</span>
-    <span class="pill"        data-sort="near"     onclick="setSort(this)">📍 Найближчі</span>
-    <span class="pill"        data-sort="price_near" onclick="setSort(this)">⚡ Ціна + відстань</span>
+    <span class="pill active" data-sort="price">🏷 За ціною</span>
+    <span class="pill"        data-sort="near">📍 Найближчі</span>
+    <span class="pill"        data-sort="price_near">⚡ Ціна + відстань</span>
   </div>
 </div>
 
-<!-- MAIN -->
 <main class="main">
-
-  <!-- PHARMACY SELECTOR -->
   <div class="section-label">
-    Оберіть аптеки
-    <span class="badge" id="sel-count">0</span>
+    Оберіть аптеки <span class="badge" id="sel-count">0</span>
   </div>
   <div class="pharmacies-grid" id="pharmacies-grid"></div>
 
-  <!-- ACTIONS -->
   <div class="actions">
-    <button class="btn-all" onclick="openAll()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-        <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-      </svg>
+    <button class="btn-all" id="btn-open-all">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
       Відкрити всі обрані
     </button>
-    <button class="btn-sec" onclick="selectAll()">Обрати всі</button>
-    <button class="btn-sec" onclick="deselectAll()">Зняти всі</button>
+    <button class="btn-sec" id="btn-select-all">Обрати всі</button>
+    <button class="btn-sec" id="btn-deselect-all">Зняти всі</button>
   </div>
 
-  <!-- RESULTS TABLE -->
   <div id="results-section">
     <div class="section-label">Готові посилання</div>
     <div class="results-head">
-      <span>Аптека</span>
-      <span>Тип</span>
-      <span>Відкрити</span>
+      <span>Аптека</span><span>Тип</span><span>Відкрити</span>
     </div>
     <div id="results-body"></div>
   </div>
 
-  <!-- EMPTY HINT -->
   <div id="empty-hint">
     <div class="emoji">🔍</div>
     <p>Введіть назву препарату і натисніть <strong>ЗНАЙТИ</strong></p>
-    <p style="margin-top:6px; font-size:12px;">Всі аптеки відкриються в окремих вкладках з готовим пошуком</p>
+    <p style="margin-top:6px;font-size:12px;">Аптеки відкриються в окремих вкладках з готовим пошуком</p>
   </div>
 
   <div class="notice">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="12" cy="12" r="10"/>
-      <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-    </svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     <span>
-      Сайти відкриваються у нових вкладках. Посилання вже містять пошуковий запит і, де підтримується — місто або координати.
-      <strong>Tabletki.ua</strong> — агрегатор із зведеними цінами одразу по багатьох мережах.
+      <strong>Tabletki.ua</strong> і <strong>Liki24</strong> — агрегатори з цінами по багатьох мережах.
+      <strong>АНЦ / Копійка / Шара</strong> — одна мережа, відкривається сторінка препарату.
+      URL перевірено вручну, квітень 2026.
     </span>
   </div>
-
 </main>
 
 <script>
-/* ── DATA ─────────────────────────────────────────────────────── */
+// ── ТРАНСЛІТЕРАЦІЯ ────────────────────────────────────────────────────
+const TR = {'а':'a','б':'b','в':'v','г':'h','ґ':'g','д':'d','е':'e','є':'ie','ж':'zh','з':'z','и':'y','і':'i','ї':'i','й':'i','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'shch','ь':'','ю':'iu','я':'ia'};
 
+function toSlug(str) {
+  return str.toLowerCase()
+    .split('').map(c => TR[c] !== undefined ? TR[c] : (/[a-z0-9]/.test(c) ? c : '-'))
+    .join('').replace(/-+/g,'-').replace(/^-|-$/g,'');
+}
+
+// ── МІСТА ─────────────────────────────────────────────────────────────
 const CITIES = {
-  kyiv:          { name: 'Київ',        lat: 50.4501, lng: 30.5234, t911: '1',  tid: 'kyiv'         },
-  kharkiv:       { name: 'Харків',      lat: 49.9935, lng: 36.2304, t911: '5',  tid: 'kharkiv'      },
-  dnipro:        { name: 'Дніпро',      lat: 48.4647, lng: 35.0462, t911: '4',  tid: 'dnipro'       },
-  odesa:         { name: 'Одеса',       lat: 46.4825, lng: 30.7233, t911: '6',  tid: 'odesa'        },
-  lviv:          { name: 'Львів',       lat: 49.8397, lng: 24.0297, t911: '7',  tid: 'lviv'         },
-  zaporizhzhia:  { name: 'Запоріжжя',  lat: 47.8388, lng: 35.1396, t911: '8',  tid: 'zaporizhzhia' },
-  chernihiv:     { name: 'Чернігів',   lat: 51.4982, lng: 31.2893, t911: '18', tid: 'chernihiv'    },
-  vinnytsia:     { name: 'Вінниця',    lat: 49.2331, lng: 28.4682, t911: '11', tid: 'vinnytsia'    },
-  poltava:       { name: 'Полтава',    lat: 49.5883, lng: 34.5514, t911: '14', tid: 'poltava'      },
-  mykolaiv:      { name: 'Миколаїв',   lat: 46.9750, lng: 31.9946, t911: '9',  tid: 'mykolaiv'     },
-  custom:        { name: 'Моя позиція', lat: null,   lng: null,    t911: '',   tid: ''             },
+  kyiv:         {name:'Київ',      lat:50.4501,lng:30.5234,t911:'1' },
+  kharkiv:      {name:'Харків',    lat:49.9935,lng:36.2304,t911:'5' },
+  dnipro:       {name:'Дніпро',   lat:48.4647,lng:35.0462,t911:'4' },
+  odesa:        {name:'Одеса',     lat:46.4825,lng:30.7233,t911:'6' },
+  lviv:         {name:'Львів',     lat:49.8397,lng:24.0297,t911:'7' },
+  zaporizhzhia: {name:'Запоріжжя',lat:47.8388,lng:35.1396,t911:'8' },
+  chernihiv:    {name:'Чернігів', lat:51.4982,lng:31.2893,t911:'18'},
+  vinnytsia:    {name:'Вінниця',   lat:49.2331,lng:28.4682,t911:'11'},
+  poltava:      {name:'Полтава',   lat:49.5883,lng:34.5514,t911:'14'},
+  mykolaiv:     {name:'Миколаїв', lat:46.9750,lng:31.9946,t911:'9' },
+  custom:       {name:'',          lat:null,   lng:null,   t911:'' },
 };
 
-// priority: sort order by price quality (lower = best for price search)
+// ── АПТЕКИ (URL перевірено вручну, квітень 2026) ─────────────────────
 const PHARMACIES = [
   {
-    id: 'tabletki',
-    name: 'Tabletki.ua',
-    domain: 'tabletki.ua',
-    tag: 'agg', tagLabel: 'Агрегатор',
-    pricePriority: 1, // best for price — already aggregated
-    geoSupport: true,
-    sel: true,
-    getUrl(drug, city, geo, sort) {
-      const base = 'https://tabletki.ua/uk/search/';
-      const params = new URLSearchParams({ search: drug });
-      const sortParam = (sort === 'price' || sort === 'price_near') ? 'price_asc' : '';
-      if (sortParam) params.set('sort', sortParam);
-      const c = CITIES[city];
-      if (geo && geo.lat) {
-        params.set('lat', geo.lat.toFixed(5));
-        params.set('lng', geo.lng.toFixed(5));
-      } else if (c && c.name) {
-        params.set('city', c.name);
-      }
-      return base + '?' + params.toString();
+    id:'tabletki', name:'Tabletki.ua', domain:'tabletki.ua',
+    tag:'agg', tagLabel:'Агрегатор', priority:1, geo:true, sel:true,
+    getUrl(drug, cityKey, geo, sort) {
+      const slug = toSlug(drug);
+      const p = new URLSearchParams();
+      if (sort==='price'||sort==='price_near') p.set('sort','price_asc');
+      const c = CITIES[cityKey];
+      if (geo && geo.lat) { p.set('lat',geo.lat.toFixed(5)); p.set('lng',geo.lng.toFixed(5)); }
+      else if (c && c.name) p.set('city', c.name);
+      const qs = p.toString();
+      return 'https://tabletki.ua/uk/search/' + encodeURIComponent(slug) + '/' + (qs?'?'+qs:'');
     }
   },
   {
-    id: 'apteka911',
-    name: 'Аптека 911',
-    domain: 'apteka911.ua',
-    tag: 'direct', tagLabel: 'Пряме',
-    pricePriority: 2,
-    geoSupport: true,
-    sel: true,
-    getUrl(drug, city, geo, sort) {
-      const params = new URLSearchParams({ search: drug });
-      const c = CITIES[city];
-      if (c && c.t911) params.set('city_id', c.t911);
-      if (sort === 'price' || sort === 'price_near') params.set('sort', 'price');
-      if (geo && geo.lat) {
-        params.set('lat', geo.lat.toFixed(5));
-        params.set('lng', geo.lng.toFixed(5));
-      }
-      return 'https://apteka911.ua/shop/search?' + params.toString();
+    id:'liki24', name:'Liki24', domain:'liki24.com',
+    tag:'agg', tagLabel:'Агрегатор', priority:2, geo:false, sel:true,
+    getUrl(drug) {
+      return 'https://liki24.com/uk/search/?q=' + encodeURIComponent(drug);
     }
   },
   {
-    id: 'anc',
-    name: 'АНЦ',
-    domain: 'anc.ua',
-    tag: 'direct', tagLabel: 'Пряме',
-    pricePriority: 3,
-    geoSupport: false,
-    sel: true,
-    getUrl(drug, city, geo, sort) {
-      const params = new URLSearchParams({ query: drug });
-      if (sort === 'price' || sort === 'price_near') params.set('sort', 'price_asc');
-      return 'https://anc.ua/search?' + params.toString();
+    id:'apteka911', name:'Аптека 911', domain:'apteka911.ua',
+    tag:'direct', tagLabel:'Пряме', priority:3, geo:true, sel:true,
+    getUrl(drug, cityKey, geo, sort) {
+      const p = new URLSearchParams({query: drug});
+      const c = CITIES[cityKey];
+      if (c && c.t911) p.set('city_id', c.t911);
+      if (sort==='price'||sort==='price_near') p.set('sort','price');
+      if (geo && geo.lat) { p.set('lat',geo.lat.toFixed(5)); p.set('lng',geo.lng.toFixed(5)); }
+      return 'https://apteka911.ua/ua/shop/search?' + p.toString();
     }
   },
   {
-    id: 'kopeka',
-    name: 'Копійка',
-    domain: 'kopeka.ua',
-    tag: 'direct', tagLabel: 'Пряме',
-    pricePriority: 4,
-    geoSupport: false,
-    sel: true,
-    getUrl(drug, city, geo, sort) {
-      const params = new URLSearchParams({ search: drug });
-      if (sort === 'price' || sort === 'price_near') params.set('sort', 'price');
-      return 'https://kopeka.ua/search?' + params.toString();
+    id:'medservice', name:'Медсервіс', domain:'online-apteka.com.ua',
+    tag:'direct', tagLabel:'Пряме', priority:4, geo:false, sel:true,
+    getUrl(drug) {
+      return 'https://online-apteka.com.ua/ua/search.html?query=' + encodeURIComponent(drug);
     }
   },
   {
-    id: 'medservice',
-    name: 'Медсервіс',
-    domain: 'med-service.ua',
-    tag: 'partial', tagLabel: 'Часткове',
-    pricePriority: 5,
-    geoSupport: false,
-    sel: true,
-    getUrl(drug, city, geo, sort) {
-      return `https://med-service.ua/search/?q=${encodeURIComponent(drug)}`;
-    }
-  },
-  {
-    id: 'aptekaua',
-    name: 'Apteka.ua',
-    domain: 'apteka.ua',
-    tag: 'agg', tagLabel: 'Агрегатор',
-    pricePriority: 2,
-    geoSupport: false,
-    sel: true,
-    getUrl(drug, city, geo, sort) {
-      const params = new URLSearchParams({ query: drug });
-      if (sort === 'price' || sort === 'price_near') params.set('sort', 'price_asc');
-      return 'https://apteka.ua/search/?' + params.toString();
-    }
-  },
-  {
-    id: 'anp',
-    name: 'АНЦ (ціни)',
-    domain: 'anc.com.ua',
-    tag: 'direct', tagLabel: 'Пряме',
-    pricePriority: 3,
-    geoSupport: false,
-    sel: false,
-    getUrl(drug, city, geo, sort) {
-      return `https://anc.com.ua/search?q=${encodeURIComponent(drug)}`;
+    id:'anc', name:'АНЦ / Копійка / Шара', domain:'anc.ua',
+    tag:'slug', tagLabel:'Slug', priority:5, geo:false, sel:true,
+    getUrl(drug) {
+      return 'https://anc.ua/product/' + toSlug(drug);
     }
   },
 ];
 
-/* ── STATE ────────────────────────────────────────────────────── */
-let geo      = null;   // { lat, lng, accuracy }
-let sortMode = 'price';
-let pharmacies = PHARMACIES.map(p => ({ ...p }));
+// ── СТАН ──────────────────────────────────────────────────────────────
+let geoCoords = null;
+let sortMode  = 'price';
+let pList     = PHARMACIES.map(p => Object.assign({}, p));
 
-/* ── INIT ─────────────────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', () => {
+// ── ІНІЦІАЛІЗАЦІЯ ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
   renderGrid();
-  // pre-select "Моя геолокація" if already available
-  if (navigator.geolocation) {
-    document.getElementById('btn-geo').style.display = 'flex';
-  }
+
+  document.getElementById('btn-search').addEventListener('click', doSearch);
+  document.getElementById('drug-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') doSearch();
+  });
+  document.getElementById('btn-geo').addEventListener('click', requestGeo);
+  document.getElementById('btn-open-all').addEventListener('click', openAll);
+  document.getElementById('btn-select-all').addEventListener('click', function() {
+    pList.forEach(function(p) { p.sel = true; }); renderGrid();
+  });
+  document.getElementById('btn-deselect-all').addEventListener('click', function() {
+    pList.forEach(function(p) { p.sel = false; }); renderGrid();
+  });
+  document.getElementById('city-select').addEventListener('change', function() {
+    if (this.value === 'custom') requestGeo();
+    else { geoCoords = null; setGeoBar(''); document.getElementById('btn-geo').classList.remove('active'); }
+  });
+  document.querySelectorAll('.pill').forEach(function(pill) {
+    pill.addEventListener('click', function() {
+      sortMode = this.dataset.sort;
+      document.querySelectorAll('.pill').forEach(function(p) { p.classList.remove('active'); });
+      this.classList.add('active');
+    });
+  });
 });
 
-/* ── GRID ─────────────────────────────────────────────────────── */
+// ── РЕНДЕР КАРТОК ─────────────────────────────────────────────────────
 function renderGrid() {
-  const sorted = [...pharmacies].sort((a, b) => a.pricePriority - b.pricePriority);
-  document.getElementById('pharmacies-grid').innerHTML = sorted.map(p => `
-    <div class="ph-card ${p.sel ? 'sel' : ''}" id="phc-${p.id}" onclick="togglePh('${p.id}')">
-      <div class="chk"></div>
-      <div class="ph-name">${p.name}</div>
-      <div class="ph-domain">${p.domain}</div>
-      <div class="ph-tag tag-${p.tag}">${p.tagLabel}</div>
-    </div>
-  `).join('');
-  updateBadge();
+  var grid = document.getElementById('pharmacies-grid');
+  var sorted = pList.slice().sort(function(a,b){ return a.priority-b.priority; });
+
+  // очищаємо і будуємо заново через DOM (без innerHTML onclick)
+  grid.innerHTML = '';
+  sorted.forEach(function(p) {
+    var card = document.createElement('div');
+    card.className = 'ph-card' + (p.sel ? ' sel' : '');
+    card.dataset.id = p.id;
+
+    var chk  = document.createElement('div'); chk.className = 'chk';
+    var name = document.createElement('div'); name.className = 'ph-name';    name.textContent = p.name;
+    var dom  = document.createElement('div'); dom.className  = 'ph-domain';  dom.textContent  = p.domain;
+    var tag  = document.createElement('div'); tag.className  = 'ph-tag tag-' + p.tag; tag.textContent = p.tagLabel;
+
+    card.appendChild(chk);
+    card.appendChild(name);
+    card.appendChild(dom);
+    card.appendChild(tag);
+
+    card.addEventListener('click', function() {
+      var item = pList.find(function(x){ return x.id === this.dataset.id; }, this);
+      if (item) { item.sel = !item.sel; renderGrid(); }
+    });
+
+    grid.appendChild(card);
+  });
+
+  document.getElementById('sel-count').textContent = pList.filter(function(p){ return p.sel; }).length;
 }
 
-function togglePh(id) {
-  const p = pharmacies.find(x => x.id === id);
-  if (p) p.sel = !p.sel;
-  renderGrid();
-}
-
-function updateBadge() {
-  document.getElementById('sel-count').textContent =
-    pharmacies.filter(p => p.sel).length;
-}
-
-function selectAll()   { pharmacies.forEach(p => p.sel = true);  renderGrid(); }
-function deselectAll() { pharmacies.forEach(p => p.sel = false); renderGrid(); }
-
-/* ── SORT ─────────────────────────────────────────────────────── */
-function setSort(el) {
-  sortMode = el.dataset.sort;
-  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-}
-
-/* ── CITY CHANGE ─────────────────────────────────────────────── */
-function onCityChange() {
-  const sel = document.getElementById('city-select');
-  if (sel.value === 'custom') {
-    requestGeo();
-  } else {
-    geo = null;
-    setGeoBar('', '');
-    document.getElementById('btn-geo').classList.remove('active');
-  }
-}
-
-/* ── GEOLOCATION ──────────────────────────────────────────────── */
+// ── ГЕОЛОКАЦІЯ ────────────────────────────────────────────────────────
 function requestGeo() {
-  if (!navigator.geolocation) {
-    setGeoBar('err', 'Геолокація не підтримується браузером');
-    return;
-  }
-  setGeoBar('wait', 'Визначаємо місцезнаходження…');
+  if (!navigator.geolocation) { setGeoBar('err','Геолокація не підтримується браузером'); return; }
+  setGeoBar('wait','Визначаємо місцезнаходження…');
   document.getElementById('btn-geo').classList.add('active');
-
   navigator.geolocation.getCurrentPosition(
-    pos => {
-      geo = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
-      const acc = Math.round(geo.accuracy);
-      setGeoBar('ok', `Геолокація: ${geo.lat.toFixed(4)}, ${geo.lng.toFixed(4)} (±${acc} м)`);
-      // switch selector to custom
+    function(pos) {
+      geoCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      setGeoBar('ok', '📍 ' + geoCoords.lat.toFixed(4) + ', ' + geoCoords.lng.toFixed(4) + ' (±' + Math.round(pos.coords.accuracy) + ' м)');
       document.getElementById('city-select').value = 'custom';
     },
-    err => {
-      const msgs = {
-        1: 'Доступ до геолокації заборонено. Дозвольте у налаштуваннях браузера.',
-        2: 'Не вдалося визначити позицію.',
-        3: 'Час очікування геолокації вийшов.',
-      };
+    function(err) {
+      var msgs = {1:'Доступ заборонено — дозвольте геолокацію в браузері.',2:'Не вдалося визначити позицію.',3:'Час очікування вийшов.'};
       setGeoBar('err', msgs[err.code] || 'Помилка геолокації.');
       document.getElementById('btn-geo').classList.remove('active');
-      geo = null;
+      geoCoords = null;
     },
-    { timeout: 10000, enableHighAccuracy: true }
+    { timeout:10000, enableHighAccuracy:true }
   );
 }
 
 function setGeoBar(type, txt) {
-  const bar = document.getElementById('geo-bar');
+  var bar = document.getElementById('geo-bar');
   if (!type) { bar.style.display = 'none'; return; }
   bar.className = 'geo-bar ' + type;
-  bar.style.display = 'flex';
-  document.getElementById('geo-bar-txt').textContent = txt;
+  document.getElementById('geo-bar-txt').textContent = txt || '';
 }
 
-/* ── SEARCH ───────────────────────────────────────────────────── */
-function search() {
-  const drugInput = document.getElementById('drug-input');
-  const drug = drugInput.value.trim();
+// ── ПОШУК ─────────────────────────────────────────────────────────────
+function doSearch() {
+  var inp  = document.getElementById('drug-input');
+  var drug = inp.value.trim();
   if (!drug) {
-    drugInput.classList.add('error');
-    setTimeout(() => drugInput.classList.remove('error'), 1500);
-    drugInput.focus();
+    inp.classList.add('error');
+    setTimeout(function(){ inp.classList.remove('error'); }, 600);
+    inp.focus();
     return;
   }
 
-  const cityKey = document.getElementById('city-select').value;
-  const selected = pharmacies.filter(p => p.sel);
+  var cityKey  = document.getElementById('city-select').value;
+  var selected = pList.filter(function(p){ return p.sel; });
+  if (!selected.length) { alert('Оберіть хоча б одну аптеку'); return; }
 
-  if (!selected.length) {
-    alert('Оберіть хоча б одну аптеку');
-    return;
-  }
+  var ordered = selected.slice();
+  if (sortMode === 'price' || sortMode === 'price_near')
+    ordered.sort(function(a,b){ return a.priority - b.priority; });
+  if (sortMode === 'near' || sortMode === 'price_near')
+    ordered.sort(function(a,b){ return (a.geo === b.geo) ? a.priority-b.priority : (a.geo?-1:1); });
 
-  // sort based on mode
-  let ordered = [...selected];
-  if (sortMode === 'price' || sortMode === 'price_near') {
-    ordered.sort((a, b) => a.pricePriority - b.pricePriority);
-  }
-  if (sortMode === 'near' || sortMode === 'price_near') {
-    // put geoSupport:true first
-    ordered.sort((a, b) => {
-      const ag = a.geoSupport ? 0 : 1;
-      const bg = b.geoSupport ? 0 : 1;
-      return ag - bg || a.pricePriority - b.pricePriority;
-    });
-  }
+  // будуємо рядки результатів через DOM
+  var tbody = document.getElementById('results-body');
+  tbody.innerHTML = '';
 
-  const tbody = document.getElementById('results-body');
-  tbody.innerHTML = ordered.map(p => {
-    const url = p.getUrl(drug, cityKey, geo, sortMode);
-    const geoNote = (p.geoSupport && geo) ? '📍 з геолокацією' : '';
-    const priceNote = (sortMode !== 'near') ? '🏷 сортування за ціною' : '';
-    const note = [geoNote, priceNote].filter(Boolean).join(' · ') || p.domain;
-    return `
-      <div class="result-row">
-        <div>
-          <div class="rph-name">${p.name}</div>
-          <div class="rph-note">${note}</div>
-        </div>
-        <span class="ph-tag tag-${p.tag}">${p.tagLabel}</span>
-        <button class="btn-open" onclick="openUrl('${encodeURIComponent(url)}')">Відкрити →</button>
-      </div>
-    `;
-  }).join('');
+  ordered.forEach(function(p) {
+    var url   = p.getUrl(drug, cityKey, geoCoords, sortMode);
+    var notes = [];
+    if (p.geo && geoCoords)                                       notes.push('📍 з геолокацією');
+    if (p.id === 'anc')                                           notes.push('сторінка препарату');
+    if (p.id !== 'anc' && (sortMode==='price'||sortMode==='price_near')) notes.push('🏷 ціна ↑');
+
+    var row  = document.createElement('div'); row.className = 'result-row';
+
+    var info = document.createElement('div');
+    var nm   = document.createElement('div'); nm.className = 'rph-name'; nm.textContent = p.name;
+    var nt   = document.createElement('div'); nt.className = 'rph-note'; nt.textContent = notes.join(' · ') || p.domain;
+    info.appendChild(nm); info.appendChild(nt);
+
+    var tag = document.createElement('span');
+    tag.className = 'ph-tag tag-' + p.tag;
+    tag.textContent = p.tagLabel;
+
+    var btn = document.createElement('button');
+    btn.className   = 'btn-open';
+    btn.textContent = 'Відкрити →';
+    btn.addEventListener('click', function() { window.open(url, '_blank'); });
+
+    row.appendChild(info);
+    row.appendChild(tag);
+    row.appendChild(btn);
+    tbody.appendChild(row);
+  });
 
   document.getElementById('results-section').style.display = 'block';
-  document.getElementById('empty-hint').style.display = 'none';
-
-  // auto-open all if sort=all
-  if (sortMode === 'price_near') {
-    ordered.forEach((p, i) =>
-      setTimeout(() => window.open(p.getUrl(drug, cityKey, geo, sortMode), '_blank'), i * 150)
-    );
-  }
-}
-
-function openUrl(encoded) {
-  window.open(decodeURIComponent(encoded), '_blank');
+  document.getElementById('empty-hint').style.display      = 'none';
 }
 
 function openAll() {
-  const drug = document.getElementById('drug-input').value.trim();
-  if (!drug) { search(); return; }
-  const cityKey = document.getElementById('city-select').value;
-  const selected = pharmacies.filter(p => p.sel);
+  var drug = document.getElementById('drug-input').value.trim();
+  if (!drug) { doSearch(); return; }
+  var cityKey  = document.getElementById('city-select').value;
+  var selected = pList.filter(function(p){ return p.sel; });
   if (!selected.length) { alert('Оберіть хоча б одну аптеку'); return; }
-  selected.forEach((p, i) =>
-    setTimeout(() => window.open(p.getUrl(drug, cityKey, geo, sortMode), '_blank'), i * 150)
-  );
+  selected.forEach(function(p, i) {
+    setTimeout(function() { window.open(p.getUrl(drug, cityKey, geoCoords, sortMode), '_blank'); }, i * 200);
+  });
 }
 </script>
 </body>
